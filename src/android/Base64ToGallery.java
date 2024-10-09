@@ -32,6 +32,12 @@ public class Base64ToGallery extends CordovaPlugin {
 
   // Consts
   public static final String EMPTY_STR = "";
+  private Context context;
+
+  // Constructor where you pass the context
+  public Base64ToGallery(Context context) {
+    this.context = context;
+}
 
   @Override
   public boolean execute(String action, JSONArray args,
@@ -98,7 +104,7 @@ public class Base64ToGallery extends CordovaPlugin {
        */
       if (check >= 1) {
         //folder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-        folder = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+        folder = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
 
         if (!folder.exists()) {
           folder.mkdirs();
