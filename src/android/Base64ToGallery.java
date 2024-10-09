@@ -97,7 +97,8 @@ public class Base64ToGallery extends CordovaPlugin {
        * 2.2
        */
       if (check >= 1) {
-        folder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        //folder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        folder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
 
         if (!folder.exists()) {
           folder.mkdirs();
