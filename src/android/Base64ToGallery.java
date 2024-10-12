@@ -2,7 +2,9 @@ package it.nexxa.base64ToGallery;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Locale;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
@@ -79,54 +81,96 @@ public class Base64ToGallery extends CordovaPlugin {
     File retVal = null;
 
     try {
-      String deviceVersion = Build.VERSION.RELEASE;
-      Calendar c           = Calendar.getInstance();
-      String date          = EMPTY_STR
-                              + c.get(Calendar.YEAR)
-                              + c.get(Calendar.MONTH)
-                              + c.get(Calendar.DAY_OF_MONTH)
-                              + c.get(Calendar.HOUR_OF_DAY)
-                              + c.get(Calendar.MINUTE)
-                              + c.get(Calendar.SECOND);
+        String date = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+        File folder;
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // Use MediaStore for Android 10+ (Scoped Storage)
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Images.Media.DISPLAY_NAME, prefix + date + ".png");
+            values.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
+            values.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES);
 
-      int check = deviceVersion.compareTo("2.3.3");
+            Uri uri = context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+            if (uri != null) {
+                OutputStream outputStream = context.getContentResolver().openOutputStream(uri);
+                bmp.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+                outputStream.close();
+            }
+        } else {
+            // Pre-Android 10, use traditional file saving methods
+            folder = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+            if (!folder.exists()) {
+                folder.mkdirs();
+            }
 
-      File folder;
-      // Use the correct Context from Cordova
-      Context context = cordova.getContext();
-
-      /*
-       * File path = Environment.getExternalStoragePublicDirectory(
-       * Environment.DIRECTORY_PICTURES ); //this throws error in Android
-       * 2.2
-       */
-      if (check >= 1) {
-        //folder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-        folder = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
-
-        if (!folder.exists()) {
-          folder.mkdirs();
+            File imageFile = new File(folder, prefix + date + ".png");
+            FileOutputStream out = new FileOutputStream(imageFile);
+            bmp.compress(Bitmap.CompressFormat.PNG, 100, out);
+            out.flush();
+            out.close();
+            retVal = imageFile;
         }
 
-      } else {
-        folder = Environment.getExternalStorageDirectory();
-      }
-
-      File imageFile = new File(folder, prefix + date + ".png");
-
-      FileOutputStream out = new FileOutputStream(imageFile);
-      bmp.compress(Bitmap.CompressFormat.PNG, 100, out);
-      out.flush();
-      out.close();
-
-      retVal = imageFile;
-
     } catch (Exception e) {
-      Log.e("Base64ToGallery", "An exception occured while saving image: " + e.toString());
+        Log.e("Base64ToGallery", "An exception occurred while saving the image: " + e.toString());
     }
 
     return retVal;
-  }
+}
+
+  // private File savePhoto(Bitmap bmp, String prefix) {
+  //   File retVal = null;
+
+  //   try {
+  //     String deviceVersion = Build.VERSION.RELEASE;
+  //     Calendar c           = Calendar.getInstance();
+  //     String date          = EMPTY_STR
+  //                             + c.get(Calendar.YEAR)
+  //                             + c.get(Calendar.MONTH)
+  //                             + c.get(Calendar.DAY_OF_MONTH)
+  //                             + c.get(Calendar.HOUR_OF_DAY)
+  //                             + c.get(Calendar.MINUTE)
+  //                             + c.get(Calendar.SECOND);
+
+  //     int check = deviceVersion.compareTo("2.3.3");
+
+  //     File folder;
+  //     // Use the correct Context from Cordova
+  //     Context context = cordova.getContext();
+
+  //     /*
+  //      * File path = Environment.getExternalStoragePublicDirectory(
+  //      * Environment.DIRECTORY_PICTURES ); //this throws error in Android
+  //      * 2.2
+  //      */
+  //     if (check >= 1) {
+  //       //folder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+  //       folder = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+
+  //       if (!folder.exists()) {
+  //         folder.mkdirs();
+  //       }
+
+  //     } else {
+  //       folder = Environment.getExternalStorageDirectory();
+  //     }
+
+  //     File imageFile = new File(folder, prefix + date + ".png");
+
+  //     FileOutputStream out = new FileOutputStream(imageFile);
+  //     bmp.compress(Bitmap.CompressFormat.PNG, 100, out);
+  //     out.flush();
+  //     out.close();
+
+  //     retVal = imageFile;
+
+  //   } catch (Exception e) {
+  //     Log.e("Base64ToGallery", "An exception occured while saving image: " + e.toString());
+  //   }
+
+  //   return retVal;
+  // }
 
   /**
    * Invoke the system's media scanner to add your photo to the Media Provider's database,
