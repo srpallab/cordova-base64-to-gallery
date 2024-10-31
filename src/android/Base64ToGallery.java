@@ -107,7 +107,7 @@ public class Base64ToGallery extends CordovaPlugin {
       } else {
         Log.i("Base64ToGallery", "Folder Location Old: " + Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString());
         // Updated for Android 9+
-        folder = cordova.getActivity().getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        folder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
       }
 
       Log.i("Base64ToGallery", "Folder Location: " + folder.toString());
