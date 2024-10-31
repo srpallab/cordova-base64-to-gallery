@@ -96,7 +96,7 @@ public class Base64ToGallery extends CordovaPlugin {
        * Environment.DIRECTORY_PICTURES ); //this throws error in Android
        * 2.2
        */
-      Log.i("Base64ToGallery", "Check Version: " + check);
+      
       if (check >= 1) {
         folder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
 
@@ -105,9 +105,12 @@ public class Base64ToGallery extends CordovaPlugin {
         }
 
       } else {
+        Log.i("Base64ToGallery", "Folder Location Old: " + Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).toString());
         // Updated for Android 9+
         folder = cordova.getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
       }
+
+      Log.i("Base64ToGallery", "Folder Location: " + folder.toString());
 
       File imageFile = new File(folder, prefix + date + ".png");
 
